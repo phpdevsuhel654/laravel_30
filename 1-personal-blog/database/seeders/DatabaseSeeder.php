@@ -1,25 +1,28 @@
 <?php
-
+// database/seeders/DatabaseSeeder.php
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Blog;
+use App\Models\Category;
+use App\Models\Tag;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Create categories and tags
+        $categories = Category::factory(5)->create();
+        $tags = Tag::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create blogs and attach categories/tags
+        Blog::factory(20)->create()->each(function ($blog) use ($categories, $tags) {
+            $blog->categories()->attach(
+                $categories->random(rand(1, 2))->pluck('id')->toArray()
+            );
+            $blog->tags()->attach(
+                $tags->random(rand(2, 4))->pluck('id')->toArray()
+            );
+        });
     }
 }

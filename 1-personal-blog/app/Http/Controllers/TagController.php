@@ -7,10 +7,17 @@ use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
-    public function index()
-    {
-        return Tag::with('blogs')->get();
-    }
+    public function index(Request $request)
+	{
+		$query = Tag::query();
+
+		if ($search = $request->input('search')) {
+			$query->where('name', 'like', "%{$search}%");
+		}
+
+		$tags = $query->paginate(10); // paginate results
+		return view('tags.index', compact('tags'));
+	}
 
     public function store(Request $request)
     {
