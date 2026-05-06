@@ -10,6 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('blog_id')->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

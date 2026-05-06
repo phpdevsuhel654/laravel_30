@@ -11,6 +11,7 @@ class BlogFactory extends Factory
     {
         $title = $this->faker->sentence(5);
         return [
+            'user_id' => null, // Will be overridden by seeder
             'title' => $title,
             'content' => $this->faker->paragraph(10),
             'slug' => Str::slug($title) . '-' . Str::random(5),

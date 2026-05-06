@@ -3,7 +3,7 @@
 @section('content')
 <h1 class="mb-3">Tags</h1>
 
-<form method="GET" action="{{ route('blogs.index') }}" class="row mb-3">
+<form method="GET" action="{{ route('tags.index') }}" class="row mb-3">
     <div class="col-md-4">
         <input type="text" name="search" class="form-control" placeholder="Search blogs..." value="{{ request('search') }}">
     </div>

@@ -1,4 +1,3 @@
-<!-- resources/views/categories/edit.blade.php -->
 @extends('layouts.app')
 
 @section('content')
@@ -8,12 +7,21 @@
     @csrf
     @method('PUT')
 
-    <label>Name:</label>
-    <input type="text" name="name" value="{{ $category->name }}" required>
+    <div class="mb-3">
+        <label for="name" class="form-label">Name:</label>
+        <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $category->name) }}" required>
+        @error('name')<span class="text-danger">{{ $message }}</span>@enderror
+    </div>
 
-    <label>Slug:</label>
-    <input type="text" name="slug" value="{{ $category->slug }}" required>
+    <div class="mb-3">
+        <label for="slug" class="form-label">Slug:</label>
+        <input type="text" id="slug" name="slug" class="form-control" value="{{ old('slug', $category->slug) }}" required>
+        @error('slug')<span class="text-danger">{{ $message }}</span>@enderror
+    </div>
 
-    <button type="submit">Update</button>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{{ route('categories.show', $category->id) }}" class="btn btn-secondary">Cancel</a>
+    </div>
 </form>
 @endsection

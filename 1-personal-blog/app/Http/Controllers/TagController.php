@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/TagController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\Tag;
@@ -8,36 +8,58 @@ use Illuminate\Http\Request;
 class TagController extends Controller
 {
     public function index(Request $request)
-	{
-		$query = Tag::query();
+    {
+        $query = Tag::query();
 
-		if ($search = $request->input('search')) {
-			$query->where('name', 'like', "%{$search}%");
-		}
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
 
-		$tags = $query->paginate(10); // paginate results
-		return view('tags.index', compact('tags'));
-	}
+        $tags = $query->paginate(10);
+        return view('tags.index', compact('tags'));
+    }
+
+    public function create()
+    {
+        return view('tags.create');
+    }
 
     public function store(Request $request)
     {
-        return Tag::create($request->only(['name', 'slug']));
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:tags',
+            'slug' => 'required|string|unique:tags',
+        ]);
+
+        Tag::create($validated);
+        return redirect()->route('tags.index')->with('success', 'Tag created successfully');
     }
 
     public function show(Tag $tag)
     {
-        return $tag->load('blogs');
+        $tag->load('blogs');
+        return view('tags.show', compact('tag'));
+    }
+
+    public function edit(Tag $tag)
+    {
+        return view('tags.edit', compact('tag'));
     }
 
     public function update(Request $request, Tag $tag)
     {
-        $tag->update($request->only(['name', 'slug']));
-        return $tag;
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:tags,name,' . $tag->id,
+            'slug' => 'required|string|unique:tags,slug,' . $tag->id,
+        ]);
+
+        $tag->update($validated);
+        return redirect()->route('tags.show', $tag->id)->with('success', 'Tag updated successfully');
     }
 
     public function destroy(Tag $tag)
     {
         $tag->delete();
-        return response()->noContent();
+        return redirect()->route('tags.index')->with('success', 'Tag deleted successfully');
     }
 }
