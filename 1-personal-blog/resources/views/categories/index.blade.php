@@ -39,5 +39,7 @@
 </table>
 
 <!-- Pagination links -->
-{{ $categories->links() }}
+<div class="d-flex justify-content-center mt-4">
+    {{ $categories->links('pagination::bootstrap-5') }}
+</div>
 @endsection

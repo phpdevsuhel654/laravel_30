@@ -3,46 +3,12 @@
 @section('content')
 <h1 class="mb-3">Tags</h1>
 
-<form method="GET" action="{{ route('tags.index') }}" class="row mb-3">
-    <div class="col-md-4">
-        <input type="text" name="search" class="form-control" placeholder="Search blogs..." value="{{ request('search') }}">
-    </div>
-
-    <div class="col-md-3">
-        <select name="category" class="form-select">
-            <option value="">Filter by Category</option>
-            @foreach(App\Models\Category::all() as $category)
-                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                    {{ $category->name }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-
-    <div class="col-md-3">
-        <select name="tag" class="form-select">
-            <option value="">Filter by Tag</option>
-            @foreach(App\Models\Tag::all() as $tag)
-                <option value="{{ $tag->id }}" {{ request('tag') == $tag->id ? 'selected' : '' }}>
-                    {{ $tag->name }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-
-    <div class="col-md-2">
-        <select name="sort" class="form-select">
-            <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
-            <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest</option>
-            <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>Title</option>
-        </select>
-    </div>
-
-    <div class="col-md-12 mt-2">
-        <button class="btn btn-primary">Apply</button>
+<form method="GET" action="{{ route('tags.index') }}" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Search tags..." value="{{ request('search') }}">
+        <button class="btn btn-primary" type="submit">Search</button>
     </div>
 </form>
-
 
 <a href="{{ route('tags.create') }}" class="btn btn-success mb-3">Create New Tag</a>
 
@@ -73,5 +39,7 @@
 </table>
 
 <!-- Pagination links -->
-{{ $tags->links() }}
+<div class="d-flex justify-content-center mt-4">
+    {{ $tags->links('pagination::bootstrap-5') }}
+</div>
 @endsection

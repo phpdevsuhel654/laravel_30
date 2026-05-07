@@ -23,14 +23,14 @@ class BlogController extends Controller
         // Category filter
         if ($categoryId = $request->input('category')) {
             $query->whereHas('categories', function ($q) use ($categoryId) {
-                $q->where('id', $categoryId);
+                $q->where('categories.id', $categoryId);
             });
         }
 
         // Tag filter
         if ($tagId = $request->input('tag')) {
             $query->whereHas('tags', function ($q) use ($tagId) {
-                $q->where('id', $tagId);
+                $q->where('tags.id', $tagId);
             });
         }
 

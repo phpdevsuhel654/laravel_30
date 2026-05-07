@@ -3,10 +3,43 @@
 @section('content')
 <h1 class="mb-3">Blogs</h1>
 
-<form method="GET" action="{{ route('blogs.index') }}" class="mb-3">
-    <div class="input-group">
+<form method="GET" action="{{ route('blogs.index') }}" class="row g-3 mb-3">
+    <div class="col-md-4">
         <input type="text" name="search" class="form-control" placeholder="Search blogs..." value="{{ request('search') }}">
-        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+
+    <div class="col-md-3">
+        <select name="category" class="form-select">
+            <option value="">Filter by Category</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                    {{ $category->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="tag" class="form-select">
+            <option value="">Filter by Tag</option>
+            @foreach($tags as $tag)
+                <option value="{{ $tag->id }}" {{ request('tag') == $tag->id ? 'selected' : '' }}>
+                    {{ $tag->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="sort" class="form-select">
+            <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
+            <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest</option>
+            <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>Title</option>
+        </select>
+    </div>
+
+    <div class="col-md-12">
+        <button class="btn btn-primary">Apply</button>
     </div>
 </form>
 
@@ -39,5 +72,7 @@
 </table>
 
 <!-- Pagination links -->
-{{ $blogs->links() }}
+<div class="d-flex justify-content-center mt-4">
+    {{ $blogs->links('pagination::bootstrap-5') }}
+</div>
 @endsection
