@@ -1,58 +1,213 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌐 Laravel Portfolio Site
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A clean, CMS-like **Portfolio Site** built with Laravel and SQLite, following senior-level architecture principles.  
+This project showcases **Projects, Skills, About, and Contacts** with CRUD operations, search, pagination, sorting, filtering, Markdown support, and RESTful APIs.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🏗️ System Architecture
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Framework**: Laravel (MVC + service-oriented design)
+- **Database**: SQLite (lightweight, file-based)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Structure
+- **Controllers** → Handle requests
+- **Models** → Represent entities (Projects, Skills, About, Contacts)
+- **Services** → Business logic (e.g., Markdown rendering)
+- **Repositories** → Abstract database queries
+- **Views** → Blade templates for UI
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 📂 Database Schema
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### projects
+| Column | Type |
+|---|---|
+| id | integer |
+| title | string |
+| description | text |
+| image | string |
+| link | string |
+| timestamps | timestamps |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### skills
+| Column | Type |
+|---|---|
+| id | integer |
+| name | string |
+| level | string |
+| timestamps | timestamps |
 
-## Agentic Development
+### abouts
+| Column | Type |
+|---|---|
+| id | integer |
+| content | text |
+| timestamps | timestamps |
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### contacts
+| Column | Type |
+|---|---|
+| id | integer |
+| name | string |
+| email | string |
+| message | text |
+| timestamps | timestamps |
+
+---
+
+## 🔑 Features
+
+- **CRUD** for Projects, Skills, About, Contacts
+- **Search & Pagination** for all modules
+- **Sorting & Filtering** (by title, level, email domain, etc.)
+- **Markdown Support** for rich text in About & Projects
+- **RESTful API Endpoints** with JSON responses
+- **Swagger/OpenAPI Documentation** for interactive API usage
+- **Deployment Ready** with caching, optimization, and CI/CD pipeline
+- **Monitoring & Scaling** with logging, error tracking, and caching strategies
+
+---
+
+## 🚀 Installation
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/yourusername/portfolio-site.git
+cd portfolio-site
 
-php artisan boost:install
+composer install
+
+npm install
+npm run dev
+
+cp .env.example .env
+
+php artisan key:generate
+
+php artisan migrate --seed
+
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Application URL:
 
-## Contributing
+```bash
+http://127.0.0.1:8000
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🌐 API Endpoints
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Projects API
 
-## Security Vulnerabilities
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/projects | List projects |
+| POST | /api/projects | Create project |
+| GET | /api/projects/{id} | Show project |
+| PUT | /api/projects/{id} | Update project |
+| DELETE | /api/projects/{id} | Delete project |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Skills API
 
-## License
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/skills | List skills |
+| POST | /api/skills | Create skill |
+| GET | /api/skills/{id} | Show skill |
+| PUT | /api/skills/{id} | Update skill |
+| DELETE | /api/skills/{id} | Delete skill |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### About API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/abouts | List about entries |
+| POST | /api/abouts | Create about entry |
+| GET | /api/abouts/{id} | Show about entry |
+| PUT | /api/abouts/{id} | Update about entry |
+| DELETE | /api/abouts/{id} | Delete about entry |
+
+### Contacts API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/contacts | List contacts |
+| POST | /api/contacts | Create contact |
+| GET | /api/contacts/{id} | Show contact |
+| PUT | /api/contacts/{id} | Update contact |
+| DELETE | /api/contacts/{id} | Delete contact |
+
+---
+
+## 📖 API Documentation
+
+Swagger UI available at:
+
+```bash
+http://your-app.test/api/documentation
+```
+
+---
+
+## 🛡️ Deployment Preparation
+
+- Set production environment variables:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+```
+
+- Cache configuration and routes:
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+- Ensure correct permissions for:
+  - `storage/`
+  - `bootstrap/cache/`
+
+- Use HTTPS and secure `.env` values
+
+---
+
+## ⚡ Scaling & Optimization
+
+- Database indexing on frequently queried fields
+- Query optimization with eager loading
+- Caching heavy queries with Redis or file cache
+- CDN integration for static assets
+- Queue workers for background tasks
+
+---
+
+## 📊 Monitoring & Maintenance
+
+- Error tracking with Sentry or Laravel Telescope
+- Automated backups with Spatie Laravel Backup
+- Uptime monitoring with Pingdom or UptimeRobot
+- CI/CD pipeline with GitHub Actions
+
+---
+
+## ✅ Outcome
+
+This Portfolio Site is a production-ready Laravel application with:
+
+- Clean architecture
+- Rich UI/UX features
+- RESTful API + documentation
+- Deployment automation
+- Monitoring & scaling strategies
+
+---
+
+## 📜 License
+
+Open-source project — feel free to use and extend.
