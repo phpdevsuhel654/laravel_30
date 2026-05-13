@@ -12,6 +12,16 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+// API Documentation
+Route::get('/api/docs', function () {
+    return view('api-docs');
+})->name('api.docs');
+
+// API Tester (HTML interface)
+Route::get('/api-tester', function () {
+    return file_get_contents(public_path('api-tester.html'));
+})->name('api.tester');
+
 // Dashboard
 Route::get('/dashboard', function () {
     $userCount = User::count();

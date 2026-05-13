@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .endpoint-list {
+            list-style: none;
+        }
+
+        .endpoint-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .endpoint-item:hover {
+            background: #e8e8ff;
+            transform: translateX(5px);
+        }
+
+        .method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.8em;
+            margin-right: 10px;
+            color: white;
+        }
+
+        .method-get {
+            background: #4CAF50;
+        }
+
+        .method-post {
+            background: #2196F3;
+        }
+
+        .method-put {
+            background: #FF9800;
+        }
+
+        .method-delete {
+            background: #f44336;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Task Manager API Tester</h1>
+            <p>Interactive API testing tool</p>
+        </header>
+
+        <div class="content">
+            <!-- Endpoints Panel -->
+            <div class="section">
+                <h2>Available Endpoints</h2>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item" onclick="setEndpoint('GET', '/api/tasks', '')">
+                        <span class="method method-get">GET</span> /api/tasks
+                    </li>
+                    <li class="endpoint-item" onclick="setEndpoint('GET', '/api/tasks/1', '')">
+                        <span class="method method-get">GET</span> /api/tasks/{id}
+                    </li>
+                    <li class="endpoint-item" onclick="setEndpoint('POST', '/api/tasks', '{\"title\": \"\", \"description\": \"\", \"user_id\": 1}')">
+                        <span class="method method-post">POST</span> /api/tasks
+                    </li>
+                    <li class="endpoint-item" onclick="setEndpoint('PUT', '/api/tasks/1', '{\"title\": \"\", \"is_completed\": false}')">
+                        <span class="method method-put">PUT</span> /api/tasks/{id}
+                    </li>
+                    <li class="endpoint-item" onclick="setEndpoint('DELETE', '/api/tasks/1', '')">
+                        <span class="method method-delete">DELETE</span> /api/tasks/{id}
+                    </li>
+                    <li class="endpoint-item" onclick="setEndpoint('POST', '/api/tasks/1/toggle-completion', '')">
+                        <span class="method method-post">POST</span> /api/tasks/{id}/toggle-completion
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Request Panel -->
+            <div class="section">
+                <h2>Request</h2>
+                <div class="form-group">
+                    <label>Method</label>
+                    <select id="method">
+                        <option>GET</option>
+                        <option>POST</option>
+                        <option>PUT</option>
+                        <option>DELETE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="text" id="url" placeholder="/api/tasks" value="/api/tasks">
+                </div>
+                <div class="form-group">
+                    <label>Query Parameters (optional)</label>
+                    <input type="text" id="params" placeholder="status=completed&sort=latest">
+                </div>
+                <div class="form-group">
+                    <label>Request Body (JSON)</label>
+                    <textarea id="body" placeholder='{"title": "Task name", "user_id": 1}'></textarea>
+                </div>
+                <button onclick="sendRequest()">Send Request</button>
+            </div>
+
+            <!-- Response Panel -->
+            <div class="section">
+                <h2>Response</h2>
+                <div id="status" style="display: none;"></div>
+                <div class="response" id="response">
+                    <p style="color: #999;">Response will appear here...</p>
+                </div>
+            </div>
+
+            <!-- Documentation Panel -->
+            <div class="section">
+                <h2>Quick Reference</h2>
+                <div style="font-size: 0.9em; line-height: 1.6; color: #555;">
+                    <p><strong>Base URL:</strong> http://localhost:8000</p>
+                    <br>
+                    <p><strong>Query Parameters:</strong></p>
+                    <ul style="margin-left: 20px; margin-bottom: 10px;">
+                        <li>search - Search by title/description</li>
+                        <li>status - Filter: completed|pending</li>
+                        <li>sort - Sort: latest|oldest|title</li>
+                        <li>page - Page number</li>
+                    </ul>
+                    <p><strong>Status Codes:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>200 - OK</li>
+                        <li>201 - Created</li>
+                        <li>204 - No Content</li>
+                        <li>400 - Bad Request</li>
+                        <li>404 - Not Found</li>
+                        <li>422 - Validation Error</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+
+        function setEndpoint(method, url, body) {
+            document.getElementById('method').value = method;
+            document.getElementById('url').value = url;
+            document.getElementById('body').value = body;
+            document.getElementById('params').value = '';
+        }
+
+        async function sendRequest() {
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            const params = document.getElementById('params').value;
+            const body = document.getElementById('body').value;
+
+            const statusDiv = document.getElementById('status');
+            const responseDiv = document.getElementById('response');
+
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = '⏳ Sending request...';
+
+            try {
+                let fullUrl = BASE_URL + url;
+                if (params) {
+                    fullUrl += '?' + params;
+                }
+
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                };
+
+                if (body && (method === 'POST' || method === 'PUT')) {
+                    options.body = body;
+                }
+
+                const response = await fetch(fullUrl, options);
+                const data = method === 'DELETE' && response.status === 204 ? {} : await response.json();
+
+                statusDiv.className = response.ok ? 'status success' : 'status error';
+                statusDiv.textContent = `${response.status} ${response.statusText}`;
+
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+                responseDiv.textContent = error.message;
+            }
+        }
+
+        // Allow Enter key to send request
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendRequest();
+            }
+        });
+    </script>
+</body>
+</html>

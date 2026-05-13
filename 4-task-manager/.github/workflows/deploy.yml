@@ -1,0 +1,145 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://app.example.com
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, mysql, pdo_mysql, zip, bcmath, curl
+        tools: composer:v2
+
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache Composer Dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Install Dependencies
+      run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+    - name: Build Frontend Assets
+      run: |
+        npm ci
+        npm run build
+
+    - name: Setup Deployment Variables
+      run: |
+        echo "DEPLOY_USER=${{ secrets.DEPLOY_USER }}" >> $GITHUB_ENV
+        echo "DEPLOY_HOST=${{ secrets.DEPLOY_HOST }}" >> $GITHUB_ENV
+        echo "DEPLOY_PATH=${{ secrets.DEPLOY_PATH }}" >> $GITHUB_ENV
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Create Deployment Package
+      run: |
+        mkdir -p deploy
+        cp -r app bootstrap config database public resources routes storage app.php composer.json composer.lock .env.production deploy/
+        cd deploy
+        tar -czf ../app.tar.gz .
+        cd ..
+
+    - name: Deploy Application
+      run: |
+        scp -i ~/.ssh/deploy_key -P ${{ secrets.DEPLOY_SSH_PORT }} app.tar.gz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
+        ssh -i ~/.ssh/deploy_key -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          cd ${{ secrets.DEPLOY_PATH }} && \
+          tar -xzf app.tar.gz && \
+          composer install --no-dev --prefer-dist --optimize-autoloader && \
+          php artisan migrate --force && \
+          php artisan config:cache && \
+          php artisan route:cache && \
+          php artisan view:cache && \
+          php artisan queue:restart && \
+          chown -R www-data:www-data . && \
+          systemctl restart php-fpm || service php-fpm restart
+        "
+
+    - name: Run Post-Deployment Tests
+      run: |
+        ssh -i ~/.ssh/deploy_key -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          cd ${{ secrets.DEPLOY_PATH }} && \
+          php artisan health:check
+        "
+
+    - name: Notify Deployment Success
+      if: success()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.repos.createDeploymentStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            deployment_id: context.payload.deployment.id,
+            state: 'success',
+            environment_url: 'https://app.example.com',
+            description: 'Deployment to production successful'
+          });
+
+    - name: Notify Deployment Failure
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '❌ Deployment failed! Check workflow logs for details.'
+          });
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f ~/.ssh/deploy_key
+        rm -f app.tar.gz
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+    - name: Slack Notification
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        text: 'Deployment to production ${{ job.status }}'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author
+        icon_emoji: ':rocket:'
