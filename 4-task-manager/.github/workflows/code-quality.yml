@@ -1,0 +1,71 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, zip, curl
+        tools: composer:v2
+
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache Composer Dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Install Dependencies
+      run: composer install --no-interaction --prefer-dist
+
+    - name: Run Laravel Pint (Code Style)
+      continue-on-error: true
+      run: php artisan pint --test
+
+    - name: Run PHPStan (Static Analysis)
+      continue-on-error: true
+      run: |
+        if [ -f phpstan.json ] || [ -f phpstan.neon ]; then
+          ./vendor/bin/phpstan analyse
+        else
+          echo "PHPStan config not found, skipping..."
+        fi
+
+    - name: Check Security Issues
+      continue-on-error: true
+      run: |
+        composer require --dev enlightn/security-checker
+        ./vendor/bin/security-checker security:check composer.lock
+
+    - name: Lint Configuration Files
+      run: |
+        php -l bootstrap/app.php
+        php -l config/*.php
+        php -l routes/*.php
+
+    - name: Check for Database Migrations
+      run: php artisan migrate:status --pending
+
+    - name: Publish Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-quality-results
+        path: storage/logs/
+        retention-days: 30

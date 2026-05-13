@@ -1,0 +1,75 @@
+name: Security & Dependency Checks
+
+on:
+  schedule:
+    # Run security checks daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    paths:
+      - 'composer.lock'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: zip
+        tools: composer:v2
+
+    - name: Install Composer Dependencies
+      run: composer install --no-interaction --prefer-dist
+
+    - name: Check PHP Composer Security
+      run: |
+        composer require --dev symfony/security-advisories:dev-main --no-update --no-scripts
+        composer update symfony/security-advisories --no-scripts --no-interaction --prefer-dist
+
+    - name: Scan Composer Packages
+      continue-on-error: true
+      run: |
+        composer require --dev --no-scripts enlightn/security-checker
+        ./vendor/bin/security-checker security:check composer.lock
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: npm audit
+      continue-on-error: true
+      run: npm audit --production
+
+    - name: Trivy Vulnerability Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy Results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Create Security Report Issue
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '⚠️ Security Vulnerabilities Found',
+            body: 'Security scan detected vulnerabilities. Please review the Security tab for details.',
+            labels: ['security', 'automated']
+          });
